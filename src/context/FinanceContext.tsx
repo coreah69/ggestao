@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Expense, Bill, Debt, AppState } from "../types";
+import { format } from "date-fns";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 
@@ -21,6 +22,16 @@ interface FinanceContextType extends AppState {
 
   setAvailableBalance: (balance: number) => void;
   loading: boolean;
+
+  // Modal states for persistence
+  billModal: { isOpen: boolean; editingId: string | null; formData: Omit<Bill, "id"> };
+  setBillModal: React.Dispatch<React.SetStateAction<{ isOpen: boolean; editingId: string | null; formData: Omit<Bill, "id"> }>>;
+
+  expenseModal: { isOpen: boolean; editingId: string | null; formData: Omit<Expense, "id"> };
+  setExpenseModal: React.Dispatch<React.SetStateAction<{ isOpen: boolean; editingId: string | null; formData: Omit<Expense, "id"> }>>;
+
+  debtModal: { isOpen: boolean; editingId: string | null; formData: Omit<Debt, "id"> };
+  setDebtModal: React.Dispatch<React.SetStateAction<{ isOpen: boolean; editingId: string | null; formData: Omit<Debt, "id"> }>>;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -35,6 +46,25 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
   const [bills, setBills] = useState<Bill[]>([]);
   const [debts, setDebts] = useState<Debt[]>([]);
   const [availableBalance, setAvailableBalance] = useState<number>(0);
+
+  // Modal Persistence States
+  const [billModal, setBillModal] = useState<{ isOpen: boolean; editingId: string | null; formData: Omit<Bill, "id"> }>({
+    isOpen: false,
+    editingId: null,
+    formData: { name: "", amount: 0, dueDate: format(new Date(), "yyyy-MM-dd"), status: "Pendente" }
+  });
+
+  const [expenseModal, setExpenseModal] = useState<{ isOpen: boolean; editingId: string | null; formData: Omit<Expense, "id"> }>({
+    isOpen: false,
+    editingId: null,
+    formData: { date: format(new Date(), "yyyy-MM-dd"), amount: 0, description: "", category: "Outros" }
+  });
+
+  const [debtModal, setDebtModal] = useState<{ isOpen: boolean; editingId: string | null; formData: Omit<Debt, "id"> }>({
+    isOpen: false,
+    editingId: null,
+    formData: { type: "", institution: "", amount: 0, priority: "Média" }
+  });
 
   useEffect(() => {
     if (!user) {
@@ -216,7 +246,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
         updateDebt,
         deleteDebt,
         setAvailableBalance,
-        loading
+        loading,
+        billModal,
+        setBillModal,
+        expenseModal,
+        setExpenseModal,
+        debtModal,
+        setDebtModal
       }}
     >
       {children}

@@ -6,7 +6,13 @@ import { Plus, Edit2, Trash2, Search, Filter } from "lucide-react";
 import { Expense, Category } from "../types";
 
 export const Expenses: React.FC = () => {
-  const { expenses, addExpense, updateExpense, deleteExpense, categories, addCategory, loading } = useFinance();
+  const { expenses, addExpense, updateExpense, deleteExpense, categories, addCategory, loading, expenseModal, setExpenseModal } = useFinance();
+
+  const { isOpen: isModalOpen, editingId, formData } = expenseModal;
+
+  const setIsModalOpen = (isOpen: boolean) => setExpenseModal(prev => ({ ...prev, isOpen }));
+  const setEditingId = (editingId: string | null) => setExpenseModal(prev => ({ ...prev, editingId }));
+  const setFormData = (formData: Omit<Expense, "id">) => setExpenseModal(prev => ({ ...prev, formData }));
 
   if (loading) {
     return (
@@ -15,15 +21,6 @@ export const Expenses: React.FC = () => {
       </div>
     );
   }
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<Omit<Expense, "id">>({
-    date: format(new Date(), "yyyy-MM-dd"),
-    amount: 0,
-    description: "",
-    category: "Outros",
-  });
 
   const [filterMonth, setFilterMonth] = useState(format(new Date(), "yyyy-MM"));
   const [filterCategory, setFilterCategory] = useState<Category | "Todas">(

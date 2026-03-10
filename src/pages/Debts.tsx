@@ -13,7 +13,13 @@ import { Debt, DebtPriority } from "../types";
 import { clsx } from "clsx";
 
 export const Debts: React.FC = () => {
-  const { debts, addDebt, updateDebt, deleteDebt, loading } = useFinance();
+  const { debts, addDebt, updateDebt, deleteDebt, loading, debtModal, setDebtModal } = useFinance();
+
+  const { isOpen: isModalOpen, editingId, formData } = debtModal;
+
+  const setIsModalOpen = (isOpen: boolean) => setDebtModal(prev => ({ ...prev, isOpen }));
+  const setEditingId = (editingId: string | null) => setDebtModal(prev => ({ ...prev, editingId }));
+  const setFormData = (formData: Omit<Debt, "id">) => setDebtModal(prev => ({ ...prev, formData }));
 
   if (loading) {
     return (
@@ -22,15 +28,6 @@ export const Debts: React.FC = () => {
       </div>
     );
   }
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<Omit<Debt, "id">>({
-    type: "",
-    institution: "",
-    amount: 0,
-    priority: "Média",
-  });
 
   const totalDebts = debts.reduce((acc, curr) => acc + curr.amount, 0);
 

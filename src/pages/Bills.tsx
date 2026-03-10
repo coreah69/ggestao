@@ -14,8 +14,14 @@ import { Bill, BillStatus } from "../types";
 import { clsx } from "clsx";
 
 export const Bills: React.FC = () => {
-  const { bills, addBill, updateBill, deleteBill, markBillAsPaid, loading } =
+  const { bills, addBill, updateBill, deleteBill, markBillAsPaid, loading, billModal, setBillModal } =
     useFinance();
+
+  const { isOpen: isModalOpen, editingId, formData } = billModal;
+
+  const setIsModalOpen = (isOpen: boolean) => setBillModal(prev => ({ ...prev, isOpen }));
+  const setEditingId = (editingId: string | null) => setBillModal(prev => ({ ...prev, editingId }));
+  const setFormData = (formData: Omit<Bill, "id">) => setBillModal(prev => ({ ...prev, formData }));
 
   if (loading) {
     return (
@@ -24,15 +30,6 @@ export const Bills: React.FC = () => {
       </div>
     );
   }
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState<Omit<Bill, "id">>({
-    name: "",
-    amount: 0,
-    dueDate: format(new Date(), "yyyy-MM-dd"),
-    status: "Pendente",
-  });
 
   const [filterMonth, setFilterMonth] = useState(format(new Date(), "yyyy-MM"));
 
