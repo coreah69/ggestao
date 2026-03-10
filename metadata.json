@@ -1,0 +1,5 @@
+{
+  "name": "Gestor Financeiro Pessoal",
+  "description": "Aplicativo web para controle financeiro pessoal, substituindo planilhas e permitindo controle total de forma simples e visual.",
+  "requestFramePermissions": []
+}
