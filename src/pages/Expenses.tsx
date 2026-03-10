@@ -27,6 +27,8 @@ export const Expenses: React.FC = () => {
     "Todas",
   );
 
+  const usedCategories = Array.from(new Set(expenses.map(e => e.category))).sort();
+
   const filteredExpenses = expenses
     .filter((e) => {
       const matchMonth = e.date.startsWith(filterMonth);
@@ -141,7 +143,7 @@ export const Expenses: React.FC = () => {
               className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[15px] font-medium text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all"
             >
               <option value="Todas">Todas as Categorias</option>
-              {categories.map((c) => (
+              {usedCategories.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>

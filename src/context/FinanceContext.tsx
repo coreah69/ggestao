@@ -76,36 +76,43 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     const fetchData = async () => {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const [
-        { data: expensesData },
-        { data: billsData },
-        { data: debtsData },
-        { data: profileData }
-      ] = await Promise.all([
-        supabase.from('expenses').select('*').order('date', { ascending: false }),
-        supabase.from('bills').select('*').order('due_date', { ascending: true }),
-        supabase.from('debts').select('*').order('amount', { ascending: false }),
-        supabase.from('profiles').select('available_balance').eq('id', user.id).single()
-      ]);
+        const [
+          { data: expensesData, error: expensesError },
+          { data: billsData, error: billsError },
+          { data: debtsData, error: debtsError },
+          { data: profileData, error: profileError }
+        ] = await Promise.all([
+          supabase.from('expenses').select('*').order('date', { ascending: false }),
+          supabase.from('bills').select('*').order('due_date', { ascending: true }),
+          supabase.from('debts').select('*').order('amount', { ascending: false }),
+          supabase.from('profiles').select('available_balance').eq('id', user.id).single()
+        ]);
 
-      if (expensesData) setExpenses(expensesData as Expense[]);
-      if (billsData) {
-        // Map snake_case to camelCase if necessary, but I created DB with snake case.
-        // Actually, let's keep it simple and assume DB matches types or I map them.
-        setBills(billsData.map(b => ({
-          id: b.id,
-          name: b.name,
-          amount: b.amount,
-          dueDate: b.due_date,
-          status: b.status
-        })));
+        if (expensesError) console.error("Error fetching expenses:", expensesError);
+        if (billsError) console.error("Error fetching bills:", billsError);
+        if (debtsError) console.error("Error fetching debts:", debtsError);
+        // Silencing profileError since it might just mean the profile doesn't exist yet for a new user
+
+        if (expensesData) setExpenses(expensesData as Expense[]);
+        if (billsData) {
+          setBills(billsData.map(b => ({
+            id: b.id,
+            name: b.name,
+            amount: b.amount,
+            dueDate: b.due_date,
+            status: b.status
+          })));
+        }
+        if (debtsData) setDebts(debtsData as Debt[]);
+        if (profileData) setAvailableBalance(profileData.available_balance || 0);
+      } catch (error) {
+        console.error("Critical error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
-      if (debtsData) setDebts(debtsData as Debt[]);
-      if (profileData) setAvailableBalance(profileData.available_balance || 0);
-
-      setLoading(false);
     };
 
     fetchData();
