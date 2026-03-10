@@ -27,6 +27,7 @@ export const Expenses: React.FC = () => {
     "Todas",
   );
 
+  // Derive categories that have at least one expense
   const usedCategories = Array.from(new Set(expenses.map(e => e.category))).sort();
 
   const filteredExpenses = expenses
