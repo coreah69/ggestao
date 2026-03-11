@@ -627,7 +627,7 @@ const AporteModal = ({ onClose, onAporte, addInvestment, investments }: any) => 
                             value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value.toUpperCase() })}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
                             <select
@@ -648,7 +648,7 @@ const AporteModal = ({ onClose, onAporte, addInvestment, investments }: any) => 
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Quant. de Cotas</label>
                             <input
@@ -720,7 +720,7 @@ const DividendModal = ({ onClose, onDividend, investments }: any) => {
                             value={formData.amount || ""} onChange={e => setFormData({ ...formData, amount: parseFloat(e.target.value) })}
                         />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo</label>
                             <select
