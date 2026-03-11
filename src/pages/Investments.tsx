@@ -10,9 +10,11 @@ import {
     DollarSign,
     ArrowUpRight,
     ArrowDownRight,
+    Calculator,
     Wallet,
     Activity,
-    Layers
+    Layers,
+    Target
 } from "lucide-react";
 import {
     AreaChart,
@@ -30,6 +32,7 @@ import {
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import { InvestmentType, TransactionType, DividendType, Investment } from "../types";
+import clsx from "clsx";
 
 const COLORS = ["#18181b", "#6366f1", "#10b981", "#f59e0b", "#ef4444"];
 
@@ -47,6 +50,7 @@ export const Investments: React.FC = () => {
     const [activeTab, setActiveTab] = useState<"dashboard" | "assets" | "history">("dashboard");
     const [isAporteModalOpen, setIsAporteModalOpen] = useState(false);
     const [isDividendModalOpen, setIsDividendModalOpen] = useState(false);
+    const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
 
     // Stats Calculations
     const totalInvested = useMemo(() =>
@@ -334,7 +338,14 @@ export const Investments: React.FC = () => {
                     <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">Investimentos</h1>
                     <p className="text-slate-500 font-medium">Acompanhe seu patrimônio e dividendos</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        onClick={() => setIsCalculatorOpen(true)}
+                        className="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-100 transition-all border border-indigo-100"
+                    >
+                        <Calculator size={18} />
+                        Calculadora
+                    </button>
                     <button
                         onClick={() => setIsDividendModalOpen(true)}
                         className="bg-emerald-50 text-emerald-700 px-5 py-2.5 rounded-2xl font-bold flex items-center gap-2 hover:bg-emerald-100 transition-all border border-emerald-100"
@@ -396,6 +407,9 @@ export const Investments: React.FC = () => {
                 )}
                 {isDividendModalOpen && (
                     <DividendModal onClose={() => setIsDividendModalOpen(false)} onDividend={addDividend} investments={investments} />
+                )}
+                {isCalculatorOpen && (
+                    <CalculatorModal onClose={() => setIsCalculatorOpen(false)} />
                 )}
             </AnimatePresence>
         </div>
@@ -584,4 +598,126 @@ const DividendModal = ({ onClose, onDividend, investments }: any) => {
     )
 };
 
-const clsx = (...classes: any[]) => classes.filter(Boolean).join(" ");
+const CalculatorModal = ({ onClose }: any) => {
+    const [data, setData] = useState({
+        name: "",
+        price: 0,
+        shares: 0,
+        yield: 0, // Annual %
+        targetIncome: 1000
+    });
+
+    const totalValue = data.price * data.shares;
+    const annualIncome = totalValue * (data.yield / 100);
+    const monthlyIncome = annualIncome / 12;
+
+    const dividendPerShare = (data.price * (data.yield / 100)) / 12;
+    const sharesNeeded = dividendPerShare > 0 ? Math.ceil(data.targetIncome / dividendPerShare) : 0;
+    const capitalNeeded = sharesNeeded * data.price;
+
+    return (
+        <div className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-100/50 flex flex-col md:flex-row"
+            >
+                {/* Sidebar Inputs */}
+                <div className="w-full md:w-80 bg-slate-50 p-8 border-r border-slate-100">
+                    <h2 className="text-xl font-bold text-zinc-900 mb-6">Simulador</h2>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider">Ativo</label>
+                            <input
+                                placeholder="Ex: PETR4"
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm"
+                                value={data.name} onChange={e => setData({ ...data, name: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider">Preço da Cota (R$)</label>
+                            <input
+                                type="number" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm"
+                                value={data.price || ""} onChange={e => setData({ ...data, price: parseFloat(e.target.value) })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider">Quant. de Cotas</label>
+                            <input
+                                type="number" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm"
+                                value={data.shares || ""} onChange={e => setData({ ...data, shares: parseFloat(e.target.value) })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1.5 tracking-wider">Dividend Yield Anual (%)</label>
+                            <input
+                                type="number" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-sm"
+                                value={data.yield || ""} onChange={e => setData({ ...data, yield: parseFloat(e.target.value) })}
+                            />
+                        </div>
+                        <div className="pt-4 border-t border-slate-200">
+                            <label className="block text-[11px] font-bold text-indigo-500 uppercase mb-1.5 tracking-wider">Meta de Renda Mensal (R$)</label>
+                            <input
+                                type="number" className="w-full px-4 py-2.5 bg-indigo-50/50 border border-indigo-100 rounded-xl font-bold text-sm text-indigo-700"
+                                value={data.targetIncome || ""} onChange={e => setData({ ...data, targetIncome: parseFloat(e.target.value) })}
+                            />
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="w-full mt-8 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl text-sm transition-colors">Fechar</button>
+                </div>
+
+                {/* Results Area */}
+                <div className="flex-1 p-8 bg-white">
+                    <div className="mb-10">
+                        <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-widest mb-4">Projeção do Investimento</h3>
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="bg-slate-50 p-5 rounded-2xl">
+                                <p className="text-[11px] font-bold text-slate-400 uppercase mb-1">Total a Investir</p>
+                                <p className="text-xl font-black text-zinc-900">R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                            </div>
+                            <div className="bg-emerald-50 p-5 rounded-2xl">
+                                <p className="text-[11px] font-bold text-emerald-600 uppercase mb-1">Renda Mensal Est.</p>
+                                <p className="text-xl font-black text-emerald-600">R$ {monthlyIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <h3 className="text-[13px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <Target size={16} className="text-indigo-500" /> Caminho para a Independência
+                        </h3>
+
+                        <div className="relative p-6 bg-indigo-600 rounded-3xl overflow-hidden text-white shadow-xl shadow-indigo-100">
+                            <div className="relative z-10">
+                                <p className="text-indigo-100 text-sm font-medium mb-1">Para receber R$ {data.targetIncome.toLocaleString('pt-BR')} mensais com {data.name || "este ativo"}:</p>
+                                <div className="flex items-baseline gap-2 mb-4">
+                                    <span className="text-4xl font-black tracking-tight">{sharesNeeded.toLocaleString('pt-BR')}</span>
+                                    <span className="text-indigo-200 font-bold uppercase text-[12px] tracking-widest">cotas</span>
+                                </div>
+                                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 inline-block">
+                                    <p className="text-[10px] uppercase font-bold text-indigo-200 mb-1">Capital Total Necessário</p>
+                                    <p className="text-lg font-black">R$ {capitalNeeded.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                </div>
+                            </div>
+                            {/* Aesthetic abstract shapes */}
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-400/20 rounded-full -ml-10 -mb-10 blur-xl"></div>
+                        </div>
+
+                        <div className="bg-amber-50 rounded-2xl p-4 flex gap-4 items-start border border-amber-100">
+                            <div className="p-2 bg-amber-100 rounded-xl text-amber-700">
+                                <Calculator size={18} />
+                            </div>
+                            <div>
+                                <p className="text-[12px] font-bold text-amber-900 mb-1">Dica do GGestor</p>
+                                <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
+                                    Lembre-se que o Dividend Yield passado não garante rendimentos futuros. Diversifique sua carteira para diluir riscos!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    );
+}
+
