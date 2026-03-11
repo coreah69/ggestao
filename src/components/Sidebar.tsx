@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   PieChart,
   Target,
+  TrendingUp,
   LogOut,
 } from "lucide-react";
 import { clsx } from "clsx";
@@ -17,7 +18,8 @@ export type TabType =
   | "bills"
   | "debts"
   | "reports"
-  | "planning";
+  | "planning"
+  | "investments";
 
 interface SidebarProps {
   activeTab: TabType;
@@ -36,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "debts", label: "Dívidas", icon: AlertTriangle },
     { id: "reports", label: "Relatórios", icon: PieChart },
     { id: "planning", label: "Planejamento", icon: Target },
+    { id: "investments", label: "Investimentos", icon: TrendingUp },
   ] as const;
 
   return (

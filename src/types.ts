@@ -33,4 +33,41 @@ export interface AppState {
   bills: Bill[];
   debts: Debt[];
   availableBalance: number;
+  investments: Investment[];
+  transactions: InvestmentTransaction[];
+  dividends: Dividend[];
+}
+
+export type InvestmentType = "Ação" | "FII" | "Renda Fixa" | "Cripto";
+
+export interface Investment {
+  id: string;
+  name: string;
+  type: InvestmentType;
+  shares: number;
+  avgPrice: number;
+  currentPrice: number;
+}
+
+export type TransactionType = "Compra" | "Venda";
+
+export interface InvestmentTransaction {
+  id: string;
+  investmentId: string;
+  type: TransactionType;
+  date: string;
+  shares: number;
+  pricePerShare: number;
+  brokerage?: number;
+  observation?: string;
+}
+
+export type DividendType = "Dividendo" | "Rendimento FII" | "Juros";
+
+export interface Dividend {
+  id: string;
+  investmentId: string;
+  amount: number;
+  date: string;
+  type: DividendType;
 }

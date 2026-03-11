@@ -6,7 +6,8 @@ import { Bills } from "../pages/Bills";
 import { Debts } from "../pages/Debts";
 import { Reports } from "../pages/Reports";
 import { Planning } from "../pages/Planning";
-import { LayoutDashboard, Receipt, CreditCard, Target, AlertTriangle, PieChart, MoreHorizontal } from "lucide-react";
+import { Investments } from "../pages/Investments";
+import { LayoutDashboard, Receipt, CreditCard, Target, AlertTriangle, PieChart, MoreHorizontal, TrendingUp } from "lucide-react";
 import { clsx } from "clsx";
 
 export const Layout: React.FC = () => {
@@ -27,6 +28,8 @@ export const Layout: React.FC = () => {
         return <Reports />;
       case "planning":
         return <Planning />;
+      case "investments":
+        return <Investments />;
       default:
         return <Dashboard />;
     }
@@ -47,6 +50,7 @@ export const Layout: React.FC = () => {
     { id: "debts", label: "Dívidas", icon: AlertTriangle },
     { id: "reports", label: "Relatórios", icon: PieChart },
     { id: "planning", label: "Planejamento", icon: Target },
+    { id: "investments", label: "Investimentos", icon: TrendingUp },
   ] as const;
 
   return (
@@ -90,7 +94,7 @@ export const Layout: React.FC = () => {
             </button>
           );
         })}
-        
+
         {/* More Menu Button */}
         <div className="relative flex flex-col items-center justify-center w-full h-full">
           <button
@@ -107,7 +111,7 @@ export const Layout: React.FC = () => {
           {/* More Menu Popup */}
           {isMoreMenuOpen && (
             <>
-              <div 
+              <div
                 className="fixed inset-0 z-40"
                 onClick={() => setIsMoreMenuOpen(false)}
               />
