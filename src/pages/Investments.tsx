@@ -770,7 +770,7 @@ const CalculatorModal = ({ onClose }: any) => {
         <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 z-[9999]">
             <motion.div
                 initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
-                className="bg-white rounded-t-[40px] sm:rounded-[48px] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row"
+                className="bg-white rounded-t-[40px] sm:rounded-[48px] shadow-2xl w-full max-w-4xl overflow-y-auto max-h-[90vh] sm:max-h-none flex flex-col md:flex-row"
             >
                 {/* Sidebar Inputs */}
                 <div className="w-full md:w-80 bg-slate-50 p-10 border-r border-slate-100">
@@ -793,28 +793,28 @@ const CalculatorModal = ({ onClose }: any) => {
                             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Preço da Cota (R$)</label>
                             <input
                                 type="number" className="w-full h-12 px-5 bg-white border border-slate-200 rounded-2xl font-black text-sm outline-none focus:border-zinc-900"
-                                value={data.price || ""} onChange={e => setData({ ...data, price: parseFloat(e.target.value) })}
+                                value={data.price || ""} onChange={e => setData({ ...data, price: parseFloat(e.target.value) || 0 })}
                             />
                         </div>
                         <div className="space-y-1.5">
                             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Quant. de Cotas</label>
                             <input
                                 type="number" className="w-full h-12 px-5 bg-white border border-slate-200 rounded-2xl font-black text-sm outline-none focus:border-zinc-900"
-                                value={data.shares || ""} onChange={e => setData({ ...data, shares: parseFloat(e.target.value) })}
+                                value={data.shares || ""} onChange={e => setData({ ...data, shares: parseFloat(e.target.value) || 0 })}
                             />
                         </div>
                         <div className="space-y-1.5">
                             <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Dividend Yield Anual (%)</label>
                             <input
                                 type="number" className="w-full h-12 px-5 bg-white border border-slate-200 rounded-2xl font-black text-sm outline-none focus:border-zinc-900"
-                                value={data.yield || ""} onChange={e => setData({ ...data, yield: parseFloat(e.target.value) })}
+                                value={data.yield || ""} onChange={e => setData({ ...data, yield: parseFloat(e.target.value) || 0 })}
                             />
                         </div>
                         <div className="pt-6 border-t border-slate-200">
                             <label className="block text-[11px] font-black text-indigo-600 uppercase tracking-widest mb-2">Meta Financeira (R$)</label>
                             <input
                                 type="number" className="w-full h-14 px-5 bg-indigo-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl font-black text-lg text-indigo-700 outline-none"
-                                value={data.targetIncome || ""} onChange={e => setData({ ...data, targetIncome: parseFloat(e.target.value) })}
+                                value={data.targetIncome || ""} onChange={e => setData({ ...data, targetIncome: parseFloat(e.target.value) || 0 })}
                             />
                         </div>
                     </div>
@@ -855,10 +855,10 @@ const CalculatorModal = ({ onClose }: any) => {
                                         <span className="text-zinc-500 font-black uppercase text-xs tracking-[0.2em]">Cotas de {data.name || "Ativo"}</span>
                                     </div>
                                 </div>
-                                <div className="bg-white pb-32 md:pb-10 relative">
+                                <div className="mt-4 md:mt-0">
                                     <div className="bg-white/10 backdrop-blur-xl rounded-[32px] p-6 border border-white/10">
                                         <p className="text-[10px] uppercase font-black text-zinc-400 mb-2">Aporte Total Necessário</p>
-                                        <p className="text-2xl font-black">R$ {capitalNeeded.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                        <p className="text-2xl font-black text-white">R$ {capitalNeeded.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                     </div>
                                 </div>
                             </div>
