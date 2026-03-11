@@ -437,11 +437,10 @@ const AporteModal = ({ onClose, onAporte, addInvestment, investments }: any) => 
                 shares: 0,
                 avgPrice: 0,
                 currentPrice: Number(formData.price)
-            }).then((res: any) => {
-                // This is a simplification, we'd need the ID from the promise return
-                // But in our Context, addInvestment doesn't return the ID yet. 
-                // Let's assume the user selects from existing or we search again.
-                onClose(); // Just close for now as we need better ID handling
+            }).then((newInv: any) => {
+                if (newInv?.id) {
+                    finish(newInv.id);
+                }
             });
         } else {
             finish(entry.id);

@@ -20,12 +20,12 @@ interface FinanceContextType extends AppState {
   setAvailableBalance: (balance: number) => void;
 
   investments: Investment[];
-  addInvestment: (investment: Omit<Investment, "id">) => Promise<void>;
+  addInvestment: (investment: Omit<Investment, "id">) => Promise<Investment | undefined>;
   updateInvestment: (id: string, investment: Omit<Investment, "id">) => Promise<void>;
   deleteInvestment: (id: string) => Promise<void>;
 
   transactions: InvestmentTransaction[];
-  addTransaction: (transaction: Omit<InvestmentTransaction, "id">) => Promise<void>;
+  addTransaction: (transaction: Omit<InvestmentTransaction, "id">) => Promise<InvestmentTransaction | undefined>;
   deleteTransaction: (id: string) => Promise<void>;
 
   dividends: Dividend[];
@@ -125,7 +125,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
         supabase.from('dividends').select('*').order('date', { ascending: false })
       ]);
 
-      if (expensesData) setExpenses(expensesData as Expense[]);
+      if (expensesData) setExpenses(expensesData.map(e => ({
+        id: e.id,
+        date: e.date,
+        amount: Number(e.amount),
+        description: e.description,
+        category: e.category
+      })));
       if (billsData) {
         setBills(billsData.map(b => ({
           id: b.id,
@@ -135,8 +141,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
           status: b.status
         })));
       }
-      if (debtsData) setDebts(debtsData as Debt[]);
-      if (profileData) setAvailableBalance(profileData.available_balance || 0);
+      if (debtsData) setDebts(debtsData.map(d => ({
+        id: d.id,
+        type: d.type,
+        institution: d.institution,
+        amount: Number(d.amount),
+        priority: d.priority
+      })));
+      if (profileData) setAvailableBalance(Number(profileData.available_balance) || 0);
 
       if (investmentsData) {
         setInvestments(investmentsData.map(i => ({
@@ -304,7 +316,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .select()
       .single();
     if (data && !error) {
-      setInvestments([...investments, { ...investment, id: data.id }]);
+      const newInv = { ...investment, id: data.id };
+      setInvestments([...investments, newInv]);
+      return newInv;
     }
   };
 
@@ -348,8 +362,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .select()
       .single();
     if (data && !error) {
-      setTransactions([{ ...transaction, id: data.id }, ...transactions]);
+      const newTransaction = { ...transaction, id: data.id };
+      setTransactions([newTransaction, ...transactions]);
 
+      // Update investment shares/avgPrice logic
       const inv = investments.find(i => i.id === transaction.investmentId);
       if (inv) {
         let newShares = inv.shares;
@@ -359,13 +375,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
           const totalCostBefore = inv.shares * inv.avgPrice;
           const totalCostNew = transaction.shares * transaction.pricePerShare;
           newShares += transaction.shares;
-          newAvgPrice = (totalCostBefore + totalCostNew) / newShares;
+          newAvgPrice = newShares > 0 ? (totalCostBefore + totalCostNew) / newShares : 0;
         } else {
           newShares -= transaction.shares;
+          // Avg price doesn't change on sell
         }
 
-        updateInvestment(inv.id, { ...inv, shares: newShares, avgPrice: newAvgPrice });
+        updateInvestment(inv.id, { ...inv, shares: Math.max(0, newShares), avgPrice: newAvgPrice });
       }
+      return newTransaction;
     }
   };
 
