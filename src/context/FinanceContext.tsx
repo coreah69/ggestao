@@ -366,23 +366,33 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       setTransactions([newTransaction, ...transactions]);
 
       // Update investment shares/avgPrice logic
-      const inv = investments.find(i => i.id === transaction.investmentId);
-      if (inv) {
-        let newShares = inv.shares;
-        let newAvgPrice = inv.avgPrice;
+      setInvestments(prev => {
+        const inv = prev.find(i => i.id === transaction.investmentId);
+        if (inv) {
+          let newShares = inv.shares;
+          let newAvgPrice = inv.avgPrice;
 
-        if (transaction.type === "Compra") {
-          const totalCostBefore = inv.shares * inv.avgPrice;
-          const totalCostNew = transaction.shares * transaction.pricePerShare;
-          newShares += transaction.shares;
-          newAvgPrice = newShares > 0 ? (totalCostBefore + totalCostNew) / newShares : 0;
-        } else {
-          newShares -= transaction.shares;
-          // Avg price doesn't change on sell
+          if (transaction.type === "Compra") {
+            const totalCostBefore = inv.shares * inv.avgPrice;
+            const totalCostNew = transaction.shares * transaction.pricePerShare;
+            newShares += transaction.shares;
+            newAvgPrice = newShares > 0 ? (totalCostBefore + totalCostNew) / newShares : 0;
+          } else {
+            newShares -= transaction.shares;
+            // Avg price doesn't change on sell
+          }
+
+          const updatedInv = { ...inv, shares: Math.max(0, newShares), avgPrice: newAvgPrice };
+          // Trigger Supabase update in background
+          supabase.from('investments').update({
+            shares: updatedInv.shares,
+            avg_price: updatedInv.avgPrice
+          }).eq('id', inv.id).then();
+
+          return prev.map(i => i.id === inv.id ? updatedInv : i);
         }
-
-        updateInvestment(inv.id, { ...inv, shares: Math.max(0, newShares), avgPrice: newAvgPrice });
-      }
+        return prev;
+      });
       return newTransaction;
     }
   };

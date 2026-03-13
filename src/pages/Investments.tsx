@@ -364,19 +364,27 @@ export const Investments: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-8 relative z-10">
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Total Investido</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                                        Valor Investido
+                                    </p>
                                     <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {invested.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Posição Atual</p>
-                                    <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {current.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                                        Patrimônio
+                                    </p>
+                                    <p className="text-[16px] font-black text-indigo-600 leading-none">R$ {current.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Quant. de Cotas</p>
-                                    <p className="text-[16px] font-bold text-slate-500 leading-none">{inv.shares}</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                                        Qtd. de Cotas
+                                    </p>
+                                    <p className="text-[16px] font-black text-zinc-900 leading-none">{inv.shares}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Preço Atual</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                                        Preço de Mercado
+                                    </p>
                                     <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {inv.currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
                             </div>
@@ -399,11 +407,11 @@ export const Investments: React.FC = () => {
                                     </button>
                                 </div>
                                 <div className={clsx(
-                                    "flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-[13px] shadow-sm",
+                                    "flex items-center gap-2.5 px-4 py-2.5 rounded-2xl font-black text-[11px] shadow-sm tracking-tighter uppercase",
                                     profit >= 0 ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
                                 )}>
-                                    {profit >= 0 ? <TrendingUp size={16} strokeWidth={3} /> : <TrendingDown size={16} strokeWidth={3} />}
-                                    R$ {Math.abs(profit).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    {profit >= 0 ? <TrendingUp size={14} strokeWidth={4} /> : <TrendingDown size={14} strokeWidth={3} />}
+                                    <span>{profit >= 0 ? "Lucro" : "Prejuízo"} R$ {Math.abs(profit).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </motion.div>
