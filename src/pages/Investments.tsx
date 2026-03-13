@@ -68,8 +68,13 @@ export const Investments: React.FC = () => {
         investments.reduce((acc, curr) => acc + (curr.shares * curr.currentPrice), 0)
         , [investments]);
 
-    const totalProfit = currentValue - totalInvested;
+    const allTimeDividends = useMemo(() =>
+        dividends.reduce((acc, curr) => acc + curr.amount, 0)
+        , [dividends]);
+
+    const totalProfit = (currentValue - totalInvested) + allTimeDividends;
     const profitPercentage = totalInvested > 0 ? (totalProfit / totalInvested) * 100 : 0;
+    const portfolioYOC = totalInvested > 0 ? (allTimeDividends / totalInvested) * 100 : 0;
 
     const monthlyDividends = useMemo(() => {
         const now = new Date();
@@ -168,13 +173,13 @@ export const Investments: React.FC = () => {
                         <div className="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-emerald-100">
                             <TrendingUp size={18} strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-[12px] font-black text-slate-400 tracking-widest uppercase">Rentabilidade</h3>
+                        <h3 className="text-[12px] font-black text-slate-400 tracking-widest uppercase">Rentabilidade Total</h3>
                     </div>
                     <div className="space-y-1">
                         <p className={clsx("text-[28px] font-black tracking-tight leading-none", totalProfit >= 0 ? "text-emerald-600" : "text-rose-600")}>
                             {totalProfit >= 0 ? "+" : "-"}R$ {Math.abs(totalProfit).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide pt-1">Lucro/Prejuízo Total</p>
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide pt-1">Valorização + Dividendos</p>
                     </div>
                 </motion.div>
 
@@ -186,13 +191,13 @@ export const Investments: React.FC = () => {
                         <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-white backdrop-blur-md">
                             <DollarSign size={18} strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-[12px] font-black text-zinc-400 tracking-widest uppercase">Renda Mensal</h3>
+                        <h3 className="text-[12px] font-black text-zinc-400 tracking-widest uppercase">Renda Acumulada</h3>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[28px] font-black tracking-tight text-white leading-none">
-                            R$ {monthlyDividends.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                            R$ {allTimeDividends.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                         </p>
-                        <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wide pt-1">Dividendos Recebidos</p>
+                        <p className="text-[11px] text-zinc-500 font-bold uppercase tracking-wide pt-1">Total de Proventos</p>
                     </div>
                 </motion.div>
 
@@ -201,16 +206,16 @@ export const Investments: React.FC = () => {
                     className="bg-white p-6 rounded-[32px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100/60 transition-all hover:border-slate-200"
                 >
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-100">
-                            <Target size={18} strokeWidth={2.5} />
+                        <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-amber-100">
+                            <Activity size={18} strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-[12px] font-black text-slate-400 tracking-widest uppercase">Renda Anual</h3>
+                        <h3 className="text-[12px] font-black text-slate-400 tracking-widest uppercase">Yield on Cost</h3>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[28px] font-black tracking-tight text-zinc-900 leading-none">
-                            R$ {yearDividends.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                            {portfolioYOC.toFixed(2)}%
                         </p>
-                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide pt-1">Acumulado em {new Date().getFullYear()}</p>
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide pt-1">Retorno Médio em Proventos</p>
                     </div>
                 </motion.div>
             </div>
@@ -330,8 +335,14 @@ export const Investments: React.FC = () => {
                 {investments.map((inv) => {
                     const invested = inv.shares * inv.avgPrice;
                     const current = inv.shares * inv.currentPrice;
-                    const profit = current - invested;
-                    const profitPct = invested > 0 ? (profit / invested) * 100 : 0;
+
+                    const assetDividends = dividends
+                        .filter(d => d.investment_id === inv.id)
+                        .reduce((acc, curr) => acc + curr.amount, 0);
+
+                    const realProfit = (current - invested) + assetDividends;
+                    const realProfitPct = invested > 0 ? (realProfit / invested) * 100 : 0;
+                    const divReturnPct = invested > 0 ? (assetDividends / invested) * 100 : 0;
 
                     return (
                         <motion.div
@@ -342,7 +353,7 @@ export const Investments: React.FC = () => {
                             {/* Background accent */}
                             <div className={clsx(
                                 "absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full blur-3xl opacity-10",
-                                profit >= 0 ? "bg-emerald-500" : "bg-rose-500"
+                                realProfit >= 0 ? "bg-emerald-500" : "bg-rose-500"
                             )} />
 
                             <div className="flex justify-between items-start mb-8 relative z-10">
@@ -356,9 +367,9 @@ export const Investments: React.FC = () => {
                                 </div>
                                 <div className={clsx(
                                     "px-3 py-1.5 rounded-2xl text-[12px] font-black shadow-sm",
-                                    profit >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                    realProfit >= 0 ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
                                 )}>
-                                    {profitPct >= 0 ? "+" : ""}{profitPct.toFixed(1)}%
+                                    {realProfit >= 0 ? "+" : ""}{realProfitPct.toFixed(1)}%
                                 </div>
                             </div>
 
@@ -375,17 +386,17 @@ export const Investments: React.FC = () => {
                                     </p>
                                     <p className="text-[16px] font-black text-indigo-600 leading-none">R$ {current.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                                        Qtd. de Cotas
+                                <div className="col-span-1">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1 text-emerald-600">
+                                        Dividendos
                                     </p>
-                                    <p className="text-[16px] font-black text-zinc-900 leading-none">{inv.shares}</p>
+                                    <p className="text-[16px] font-black text-emerald-600 leading-none">R$ {assetDividends.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
-                                <div>
+                                <div className="col-span-1">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1">
-                                        Preço de Mercado
+                                        Yield on Cost
                                     </p>
-                                    <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {inv.currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                    <p className="text-[16px] font-black text-zinc-900 leading-none">{divReturnPct.toFixed(2)}%</p>
                                 </div>
                             </div>
 
@@ -408,10 +419,10 @@ export const Investments: React.FC = () => {
                                 </div>
                                 <div className={clsx(
                                     "flex items-center gap-2.5 px-4 py-2.5 rounded-2xl font-black text-[11px] shadow-sm tracking-tighter uppercase",
-                                    profit >= 0 ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
+                                    realProfit >= 0 ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
                                 )}>
-                                    {profit >= 0 ? <TrendingUp size={14} strokeWidth={4} /> : <TrendingDown size={14} strokeWidth={3} />}
-                                    <span>{profit >= 0 ? "Lucro" : "Prejuízo"} R$ {Math.abs(profit).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                    {realProfit >= 0 ? <TrendingUp size={14} strokeWidth={4} /> : <TrendingDown size={14} strokeWidth={3} />}
+                                    <span>{realProfit >= 0 ? "Ganho Real" : "Prejuízo Real"} R$ {Math.abs(realProfit).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                 </div>
                             </div>
                         </motion.div>
