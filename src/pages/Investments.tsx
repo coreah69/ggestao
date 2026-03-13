@@ -521,7 +521,6 @@ export const Investments: React.FC = () => {
                 {[
                     { id: "dashboard", label: "Dashboard", icon: PieChartIcon },
                     { id: "assets", label: "Minha Carteira", icon: Layers },
-                    { id: "history", label: "Extrato", icon: History },
                 ].map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -552,15 +551,6 @@ export const Investments: React.FC = () => {
                     >
                         {activeTab === "dashboard" && renderDashboard()}
                         {activeTab === "assets" && renderAssets()}
-                        {activeTab === "history" && (
-                            <div className="bg-white rounded-[40px] p-16 text-center text-slate-300 border border-slate-100 border-dashed">
-                                <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <History size={40} strokeWidth={1.5} className="opacity-20" />
-                                </div>
-                                <h3 className="text-xl font-black text-slate-400 mb-2">Próxima Parada: Histórico</h3>
-                                <p className="text-sm font-bold text-slate-400 max-w-sm mx-auto uppercase tracking-tighter">Estamos construindo esta funcionalidade para você acompanhar cada centavo da sua jornada.</p>
-                            </div>
-                        )}
                     </motion.div>
                 </AnimatePresence>
             </main>
