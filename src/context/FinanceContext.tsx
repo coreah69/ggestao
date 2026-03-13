@@ -207,7 +207,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .select()
       .single();
     if (data && !error) {
-      setExpenses([data as Expense, ...expenses]);
+      setExpenses(prev => [data as Expense, ...prev]);
     }
   };
 
@@ -217,14 +217,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .update(expense)
       .eq('id', id);
     if (!error) {
-      setExpenses(expenses.map((e) => (e.id === id ? { ...expense, id } : e)));
+      setExpenses(prev => prev.map((e) => (e.id === id ? { ...expense, id } : e)));
     }
   };
 
   const deleteExpense = async (id: string) => {
     const { error } = await supabase.from('expenses').delete().eq('id', id);
     if (!error) {
-      setExpenses(expenses.filter((e) => e.id !== id));
+      setExpenses(prev => prev.filter((e) => e.id !== id));
     }
   };
 
@@ -242,7 +242,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .select()
       .single();
     if (data && !error) {
-      setBills([...bills, { ...bill, id: data.id }]);
+      setBills(prev => [...prev, { ...bill, id: data.id }]);
     }
   };
 
@@ -257,21 +257,21 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       })
       .eq('id', id);
     if (!error) {
-      setBills(bills.map((b) => (b.id === id ? { ...bill, id } : b)));
+      setBills(prev => prev.map((b) => (b.id === id ? { ...bill, id } : b)));
     }
   };
 
   const deleteBill = async (id: string) => {
     const { error } = await supabase.from('bills').delete().eq('id', id);
     if (!error) {
-      setBills(bills.filter((b) => b.id !== id));
+      setBills(prev => prev.filter((b) => b.id !== id));
     }
   };
 
   const markBillAsPaid = async (id: string) => {
     const { error } = await supabase.from('bills').update({ status: 'Paga' }).eq('id', id);
     if (!error) {
-      setBills(bills.map((b) => (b.id === id ? { ...b, status: "Paga" } : b)));
+      setBills(prev => prev.map((b) => (b.id === id ? { ...b, status: "Paga" } : b)));
     }
   };
 
@@ -283,21 +283,21 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .select()
       .single();
     if (data && !error) {
-      setDebts([...debts, { ...debt, id: data.id }]);
+      setDebts(prev => [...prev, { ...debt, id: data.id }]);
     }
   };
 
   const updateDebt = async (id: string, debt: Omit<Debt, "id">) => {
     const { error } = await supabase.from('debts').update(debt).eq('id', id);
     if (!error) {
-      setDebts(debts.map((d) => (d.id === id ? { ...debt, id } : d)));
+      setDebts(prev => prev.map((d) => (d.id === id ? { ...debt, id } : d)));
     }
   };
 
   const deleteDebt = async (id: string) => {
     const { error } = await supabase.from('debts').delete().eq('id', id);
     if (!error) {
-      setDebts(debts.filter((d) => d.id !== id));
+      setDebts(prev => prev.filter((d) => d.id !== id));
     }
   };
 
@@ -317,7 +317,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .single();
     if (data && !error) {
       const newInv = { ...investment, id: data.id };
-      setInvestments([...investments, newInv]);
+      setInvestments(prev => [...prev, newInv]);
       return newInv;
     }
   };
@@ -334,14 +334,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       })
       .eq('id', id);
     if (!error) {
-      setInvestments(investments.map((i) => (i.id === id ? { ...investment, id } : i)));
+      setInvestments(prev => prev.map((i) => (i.id === id ? { ...investment, id } : i)));
     }
   };
 
   const deleteInvestment = async (id: string) => {
     const { error } = await supabase.from('investments').delete().eq('id', id);
     if (!error) {
-      setInvestments(investments.filter((i) => i.id !== id));
+      setInvestments(prev => prev.filter((i) => i.id !== id));
     }
   };
 
@@ -400,7 +400,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteTransaction = async (id: string) => {
     const { error } = await supabase.from('investment_transactions').delete().eq('id', id);
     if (!error) {
-      setTransactions(transactions.filter((t) => t.id !== id));
+      setTransactions(prev => prev.filter((t) => t.id !== id));
     }
   };
 
@@ -418,14 +418,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({
       .select()
       .single();
     if (data && !error) {
-      setDividends([{ ...dividend, id: data.id }, ...dividends]);
+      setDividends(prev => [{ ...dividend, id: data.id }, ...prev]);
     }
   };
 
   const deleteDividend = async (id: string) => {
     const { error } = await supabase.from('dividends').delete().eq('id', id);
     if (!error) {
-      setDividends(dividends.filter((d) => d.id !== id));
+      setDividends(prev => prev.filter((d) => d.id !== id));
     }
   };
 
