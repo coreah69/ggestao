@@ -337,7 +337,7 @@ export const Investments: React.FC = () => {
                     const current = inv.shares * inv.currentPrice;
 
                     const assetDividends = dividends
-                        .filter(d => d.investment_id === inv.id)
+                        .filter(d => d.investmentId === inv.id)
                         .reduce((acc, curr) => acc + curr.amount, 0);
 
                     const realProfit = (current - invested) + assetDividends;
