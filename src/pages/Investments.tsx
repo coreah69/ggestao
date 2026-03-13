@@ -57,6 +57,7 @@ export const Investments: React.FC = () => {
     const [isDividendModalOpen, setIsDividendModalOpen] = useState(false);
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+    const [selectedHistoryInvestment, setSelectedHistoryInvestment] = useState<Investment | null>(null);
 
     // Stats Calculations
     const totalInvested = useMemo(() =>
@@ -363,30 +364,40 @@ export const Investments: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-y-6 gap-x-4 mb-8 relative z-10">
                                 <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Preço Médio</p>
-                                    <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {inv.avgPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Preço Atual</p>
-                                    <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {inv.currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                                </div>
-                                <div>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Total Investido</p>
-                                    <p className="text-[16px] font-bold text-slate-500 leading-none">R$ {invested.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                    <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {invested.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Posição Atual</p>
                                     <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {current.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                 </div>
+                                <div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Quant. de Cotas</p>
+                                    <p className="text-[16px] font-bold text-slate-500 leading-none">{inv.shares}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1.5">Preço Atual</p>
+                                    <p className="text-[16px] font-black text-zinc-900 leading-none">R$ {inv.currentPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                </div>
                             </div>
 
                             <div className="pt-6 border-t border-slate-50 flex justify-between items-center relative z-10">
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); deleteInvestment(inv.id); }}
-                                    className="w-10 h-10 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm"
-                                >
-                                    <X size={18} />
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); deleteInvestment(inv.id); }}
+                                        className="w-10 h-10 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm"
+                                        title="Excluir Ativo"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setSelectedHistoryInvestment(inv); }}
+                                        className="w-10 h-10 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-sm"
+                                        title="Histórico de Aportes"
+                                    >
+                                        <History size={18} />
+                                    </button>
+                                </div>
                                 <div className={clsx(
                                     "flex items-center gap-2 px-4 py-2 rounded-2xl font-black text-[13px] shadow-sm",
                                     profit >= 0 ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
@@ -557,7 +568,68 @@ export const Investments: React.FC = () => {
                 {isCalculatorOpen && (
                     <CalculatorModal onClose={() => setIsCalculatorOpen(false)} />
                 )}
+                {selectedHistoryInvestment && (
+                    <HistoryModal
+                        investment={selectedHistoryInvestment}
+                        transactions={transactions.filter(t => t.investmentId === selectedHistoryInvestment.id)}
+                        onClose={() => setSelectedHistoryInvestment(null)}
+                    />
+                )}
             </AnimatePresence>
+        </div>
+    );
+};
+
+const HistoryModal = ({ investment, transactions, onClose }: any) => {
+    return (
+        <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 z-[9999]">
+            <motion.div
+                initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 100 }}
+                className="bg-white rounded-t-[40px] sm:rounded-[48px] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+                <div className="p-10 pb-4 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-2xl font-black text-zinc-900">Histórico de Aportes</h2>
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{investment.name}</p>
+                    </div>
+                    <button onClick={onClose} className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-100 transition-colors">
+                        <X size={20} strokeWidth={3} />
+                    </button>
+                </div>
+
+                <div className="p-10 pt-6 overflow-y-auto custom-scrollbar">
+                    {transactions.length === 0 ? (
+                        <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest">
+                            Nenhuma transação encontrada.
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {transactions
+                                .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                                .map((t: any) => (
+                                    <div key={t.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-[24px] border border-slate-100/50">
+                                        <div className="flex items-center gap-4">
+                                            <div className={clsx(
+                                                "w-10 h-10 rounded-2xl flex items-center justify-center",
+                                                t.type === "Compra" ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
+                                            )}>
+                                                {t.type === "Compra" ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-zinc-900">{t.type}</p>
+                                                <p className="text-[11px] font-bold text-slate-400">{format(parseISO(t.date), "dd/MM/yyyy")}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm font-black text-zinc-900">{t.shares} cotas</p>
+                                            <p className="text-[11px] font-bold text-slate-500">R$ {t.pricePerShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} / cota</p>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
+                    )}
+                </div>
+            </motion.div>
         </div>
     );
 };
