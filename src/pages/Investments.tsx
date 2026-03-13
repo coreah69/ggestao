@@ -18,7 +18,10 @@ import {
     ChevronDown,
     X,
     PlusCircle,
-    BarChart3
+    BarChart3,
+    MoreVertical,
+    Trash2,
+    AlertCircle
 } from "lucide-react";
 import {
     XAxis,
@@ -58,6 +61,8 @@ export const Investments: React.FC = () => {
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
     const [selectedHistoryInvestment, setSelectedHistoryInvestment] = useState<Investment | null>(null);
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
     // Stats Calculations
     const totalInvested = useMemo(() =>
@@ -400,22 +405,57 @@ export const Investments: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-slate-50 flex justify-between items-center relative z-10">
-                                <div className="flex gap-2">
+                            <div className="pt-6 border-t border-slate-50 flex justify-between items-center relative z-20">
+                                <div className="relative">
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); deleteInvestment(inv.id); }}
-                                        className="w-10 h-10 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm"
-                                        title="Excluir Ativo"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setActiveMenuId(activeMenuId === inv.id ? null : inv.id);
+                                        }}
+                                        className="w-10 h-10 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-slate-100 transition-all shadow-sm"
+                                        title="Mais Opções"
                                     >
-                                        <X size={18} />
+                                        <MoreVertical size={18} />
                                     </button>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setSelectedHistoryInvestment(inv); }}
-                                        className="w-10 h-10 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 transition-all shadow-sm"
-                                        title="Histórico de Aportes"
-                                    >
-                                        <History size={18} />
-                                    </button>
+
+                                    <AnimatePresence>
+                                        {activeMenuId === inv.id && (
+                                            <>
+                                                <div
+                                                    className="fixed inset-0 z-30"
+                                                    onClick={(e) => { e.stopPropagation(); setActiveMenuId(null); }}
+                                                />
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                    className="absolute bottom-12 left-0 w-48 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 z-40 overflow-hidden"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedHistoryInvestment(inv);
+                                                            setActiveMenuId(null);
+                                                        }}
+                                                        className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 rounded-2xl transition-all text-sm font-bold"
+                                                    >
+                                                        <History size={16} />
+                                                        Ver Histórico
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setItemToDelete(inv.id);
+                                                            setActiveMenuId(null);
+                                                        }}
+                                                        className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-rose-50 hover:text-rose-500 rounded-2xl transition-all text-sm font-bold"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                        Excluir Ativo
+                                                    </button>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                                 <div className={clsx(
                                     "flex items-center gap-2.5 px-4 py-2.5 rounded-2xl font-black text-[11px] shadow-sm tracking-tighter uppercase",
@@ -577,21 +617,43 @@ export const Investments: React.FC = () => {
                 </button>
             </div>
 
+            {/* Modals Layer */}
             <AnimatePresence>
                 {isAporteModalOpen && (
-                    <AporteModal onClose={() => setIsAporteModalOpen(false)} onAporte={addTransaction} addInvestment={addInvestment} investments={investments} />
+                    <AporteModal
+                        onClose={() => setIsAporteModalOpen(false)}
+                        onAporte={addTransaction}
+                        addInvestment={addInvestment}
+                        investments={investments}
+                    />
                 )}
                 {isDividendModalOpen && (
-                    <DividendModal onClose={() => setIsDividendModalOpen(false)} onDividend={addDividend} investments={investments} />
+                    <DividendModal
+                        onClose={() => setIsDividendModalOpen(false)}
+                        onDividend={addDividend}
+                        investments={investments}
+                    />
                 )}
                 {isCalculatorOpen && (
-                    <CalculatorModal onClose={() => setIsCalculatorOpen(false)} />
+                    <CalculatorModal
+                        onClose={() => setIsCalculatorOpen(false)}
+                    />
                 )}
                 {selectedHistoryInvestment && (
                     <HistoryModal
                         investment={selectedHistoryInvestment}
                         transactions={transactions.filter(t => t.investmentId === selectedHistoryInvestment.id)}
                         onClose={() => setSelectedHistoryInvestment(null)}
+                    />
+                )}
+                {itemToDelete && (
+                    <DeleteConfirmationModal
+                        onConfirm={() => {
+                            deleteInvestment(itemToDelete);
+                            setItemToDelete(null);
+                        }}
+                        onCancel={() => setItemToDelete(null)}
+                        itemName={investments.find(i => i.id === itemToDelete)?.name || ""}
                     />
                 )}
             </AnimatePresence>
@@ -975,3 +1037,36 @@ const CalculatorModal = ({ onClose }: any) => {
         </div>
     );
 }
+
+const DeleteConfirmationModal = ({ onConfirm, onCancel, itemName }: any) => {
+    return (
+        <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-md flex items-center justify-center p-4 z-[9999]">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                className="bg-white rounded-[40px] shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100 p-10 text-center"
+            >
+                <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <Trash2 size={32} strokeWidth={2.5} />
+                </div>
+                <h2 className="text-2xl font-black text-zinc-900 mb-3">Excluir {itemName}?</h2>
+                <p className="text-slate-500 font-bold mb-8 leading-relaxed">
+                    Esta ação não pode ser desfeita. Todos os aportes e dividendos deste ativo serão removidos permanentemente.
+                </p>
+                <div className="flex flex-col gap-3">
+                    <button
+                        onClick={onConfirm}
+                        className="h-14 bg-rose-500 text-white font-black rounded-2xl shadow-xl shadow-rose-100 hover:bg-rose-600 transition-all uppercase tracking-widest text-sm"
+                    >
+                        Sim, Excluir Ativo
+                    </button>
+                    <button
+                        onClick={onCancel}
+                        className="h-14 bg-slate-50 text-slate-400 font-black rounded-2xl hover:bg-slate-100 transition-all uppercase tracking-widest text-sm"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
