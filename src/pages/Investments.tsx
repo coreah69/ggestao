@@ -52,7 +52,9 @@ export const Investments: React.FC = () => {
         addInvestment,
         addTransaction,
         addDividend,
-        deleteInvestment
+        deleteInvestment,
+        deleteTransaction,
+        deleteDividend
     } = useFinance();
 
     const [activeTab, setActiveTab] = useState<"dashboard" | "assets" | "history">("dashboard");
@@ -633,6 +635,9 @@ export const Investments: React.FC = () => {
                     <HistoryModal
                         investment={selectedHistoryInvestment}
                         transactions={transactions.filter(t => t.investmentId === selectedHistoryInvestment.id)}
+                        dividends={dividends.filter(d => d.investmentId === selectedHistoryInvestment.id)}
+                        onDeleteTransaction={deleteTransaction}
+                        onDeleteDividend={deleteDividend}
                         onClose={() => setSelectedHistoryInvestment(null)}
                     />
                 )}
@@ -651,7 +656,9 @@ export const Investments: React.FC = () => {
     );
 };
 
-const HistoryModal = ({ investment, transactions, onClose }: any) => {
+const HistoryModal = ({ investment, transactions, dividends, onDeleteTransaction, onDeleteDividend, onClose }: any) => {
+    const [activeTab, setActiveTab] = useState<"transactions" | "dividends">("transactions");
+
     return (
         <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 z-[9999]">
             <motion.div
@@ -660,7 +667,7 @@ const HistoryModal = ({ investment, transactions, onClose }: any) => {
             >
                 <div className="p-10 pb-4 flex justify-between items-center">
                     <div>
-                        <h2 className="text-2xl font-black text-zinc-900">Histórico de Aportes</h2>
+                        <h2 className="text-2xl font-black text-zinc-900">Histórico</h2>
                         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{investment.name}</p>
                     </div>
                     <button onClick={onClose} className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-100 transition-colors">
@@ -668,22 +675,53 @@ const HistoryModal = ({ investment, transactions, onClose }: any) => {
                     </button>
                 </div>
 
-                <div className="p-10 pt-6 overflow-y-auto custom-scrollbar">
-                    {transactions.length === 0 ? (
-                        <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest">
-                            Nenhuma transação encontrada.
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {transactions
-                                .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                .map((t: any) => (
-                                    <div key={t.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-[24px] border border-slate-100/50">
+                {/* Internal Tabs */}
+                <div className="px-10 flex gap-4 border-b border-slate-50">
+                    <button
+                        onClick={() => setActiveTab("transactions")}
+                        className={clsx(
+                            "pb-4 text-[13px] font-black uppercase tracking-widest transition-all relative",
+                            activeTab === "transactions" ? "text-zinc-900" : "text-slate-300 hover:text-slate-400"
+                        )}
+                    >
+                        Aportes ({transactions.length})
+                        {activeTab === "transactions" && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-900 rounded-full" />}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("dividends")}
+                        className={clsx(
+                            "pb-4 text-[13px] font-black uppercase tracking-widest transition-all relative",
+                            activeTab === "dividends" ? "text-emerald-600" : "text-slate-300 hover:text-slate-400"
+                        )}
+                    >
+                        Dividendos ({dividends.length})
+                        {activeTab === "dividends" && <motion.div layoutId="tab-underline" className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 rounded-full" />}
+                    </button>
+
+                    {activeTab === "dividends" && dividends.length > 0 && (
+                        <button
+                            onClick={() => {
+                                if (confirm(`Deseja limpar todos os ${dividends.length} dividendos de ${investment.name}?`)) {
+                                    dividends.forEach((d: any) => onDeleteDividend(d.id));
+                                }
+                            }}
+                            className="ml-auto pb-4 text-[11px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-widest transition-all"
+                        >
+                            Limpar Tudo
+                        </button>
+                    )}
+                </div>
+
+                <div className="p-10 pt-6 overflow-y-auto custom-scrollbar flex-1">
+                    {activeTab === "transactions" ? (
+                        transactions.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest">Nenhum aporte encontrado.</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {transactions.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((t: any) => (
+                                    <div key={t.id} className="flex items-center justify-between p-5 bg-slate-50 rounded-[24px] border border-slate-100/50 group">
                                         <div className="flex items-center gap-4">
-                                            <div className={clsx(
-                                                "w-10 h-10 rounded-2xl flex items-center justify-center",
-                                                t.type === "Compra" ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600"
-                                            )}>
+                                            <div className={clsx("w-10 h-10 rounded-2xl flex items-center justify-center", t.type === "Compra" ? "bg-emerald-100 text-emerald-600" : "bg-rose-100 text-rose-600")}>
                                                 {t.type === "Compra" ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                                             </div>
                                             <div>
@@ -691,13 +729,54 @@ const HistoryModal = ({ investment, transactions, onClose }: any) => {
                                                 <p className="text-[11px] font-bold text-slate-400">{format(parseISO(t.date), "dd/MM/yyyy")}</p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-sm font-black text-zinc-900">{t.shares} cotas</p>
-                                            <p className="text-[11px] font-bold text-slate-500">R$ {t.pricePerShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} / cota</p>
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-right">
+                                                <p className="text-sm font-black text-zinc-900">{t.shares} cotas</p>
+                                                <p className="text-[11px] font-bold text-slate-500">R$ {t.pricePerShare.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} / cota</p>
+                                            </div>
+                                            <button
+                                                onClick={() => { if (confirm('Excluir este aporte?')) onDeleteTransaction(t.id); }}
+                                                className="w-8 h-8 rounded-xl bg-rose-50 text-rose-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-100 hover:text-rose-600"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
-                        </div>
+                            </div>
+                        )
+                    ) : (
+                        dividends.length === 0 ? (
+                            <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest">Nenhum dividendo encontrado.</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {dividends.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((d: any) => (
+                                    <div key={d.id} className="flex items-center justify-between p-5 bg-emerald-50/30 rounded-[24px] border border-emerald-100/50 group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                                                <DollarSign size={18} />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-zinc-900">{d.type}</p>
+                                                <p className="text-[11px] font-bold text-slate-400">{format(parseISO(d.date), "dd/MM/yyyy")}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-6">
+                                            <div className="text-right">
+                                                <p className="text-sm font-black text-emerald-600">+ R$ {d.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Recebido</p>
+                                            </div>
+                                            <button
+                                                onClick={() => { if (confirm('Excluir este dividendo?')) onDeleteDividend(d.id); }}
+                                                className="w-8 h-8 rounded-xl bg-rose-50 text-rose-400 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-100 hover:text-rose-600"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )
                     )}
                 </div>
             </motion.div>
